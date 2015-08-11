@@ -77,7 +77,11 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
 
     @Override
     public ServiceInstance getServiceInstance(String id) {
-        return s3.findServiceInstance(id);
+        ServiceInstance instance = s3.findServiceInstance(id);
+        if (instance != null) {
+            return instance;
+        }
+        return new SharedPlan(iam, s3).findServiceInstance(id);
     }
 
 }
