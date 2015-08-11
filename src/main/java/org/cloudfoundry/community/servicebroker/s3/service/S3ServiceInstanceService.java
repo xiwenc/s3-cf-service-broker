@@ -15,8 +15,6 @@
  */
 package org.cloudfoundry.community.servicebroker.s3.service;
 
-import java.util.List;
-
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceExistsException;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
@@ -27,7 +25,7 @@ import org.cloudfoundry.community.servicebroker.service.ServiceInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.s3.model.Bucket;
+import java.util.List;
 
 /**
  * @author David Ehringer
@@ -37,11 +35,15 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
 
     private final Iam iam;
     private final S3 s3;
+    private final BasicPlan basicPlan;
+    private final SharedPlan sharedPlan;
 
     @Autowired
-    public S3ServiceInstanceService(Iam iam, S3 s3) {
+    public S3ServiceInstanceService(Iam iam, S3 s3, BasicPlan basicPlan, SharedPlan sharedPlan) {
         this.iam = iam;
         this.s3 = s3;
+        this.basicPlan = basicPlan;
+        this.sharedPlan = sharedPlan;
     }
 
     @Override
@@ -49,9 +51,9 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
             String organizationGuid, String spaceGuid) throws ServiceInstanceExistsException, ServiceBrokerException {
 
         if (planId.equals(BasicPlan.PLAN_ID)) {
-            return new BasicPlan(iam, s3).createServiceInstance(service, serviceInstanceId, planId, organizationGuid, spaceGuid);
+            return basicPlan.createServiceInstance(service, serviceInstanceId, planId, organizationGuid, spaceGuid);
         } else if (planId.equals(SharedPlan.PLAN_ID)) {
-            return new SharedPlan(iam, s3).createServiceInstance(service, serviceInstanceId, planId, organizationGuid, spaceGuid);
+            return sharedPlan.createServiceInstance(service, serviceInstanceId, planId, organizationGuid, spaceGuid);
         } else {
             return null;
         }
@@ -62,9 +64,9 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
             throws ServiceBrokerException {
 
         if (planId.equals(BasicPlan.PLAN_ID)) {
-            return new BasicPlan(iam, s3).deleteServiceInstance(id);
+            return basicPlan.deleteServiceInstance(id);
         } else if (planId.equals(SharedPlan.PLAN_ID)) {
-            return new SharedPlan(iam, s3).deleteServiceInstance(id, serviceId, planId);
+            return sharedPlan.deleteServiceInstance(id, serviceId, planId);
         } else {
             return null;
         }
@@ -81,7 +83,7 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
         if (instance != null) {
             return instance;
         }
-        return new SharedPlan(iam, s3).findServiceInstance(id);
+        return sharedPlan.findServiceInstance(id);
     }
 
 }

@@ -4,24 +4,27 @@ import com.amazonaws.services.identitymanagement.model.AccessKey;
 import com.amazonaws.services.identitymanagement.model.User;
 import com.amazonaws.services.s3.model.Bucket;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
-import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceBindingExistsException;
 import org.cloudfoundry.community.servicebroker.model.Plan;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
 import org.cloudfoundry.community.servicebroker.s3.service.Iam;
 import org.cloudfoundry.community.servicebroker.s3.service.S3;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class BasicPlan {
     private final Iam iam;
     private final S3 s3;
     public static final String PLAN_ID = "s3-basic-plan";
 
+    @Autowired
     public BasicPlan(Iam iam, S3 s3) {
         this.iam = iam;
         this.s3 = s3;

@@ -1,8 +1,10 @@
 package org.cloudfoundry.community.servicebroker.s3.plan;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import org.cloudfoundry.community.servicebroker.model.Plan;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
@@ -21,22 +23,19 @@ import java.util.Map;
 
 @Component
 public class SharedPlan {
-    @Autowired
-    private BrokerConfiguration brokerConfiguration;
+    private final BrokerConfiguration brokerConfiguration;
 
-    private Iam iam;
-    private S3 s3;
+    private final Iam iam;
+    private final S3 s3;
     private AmazonS3 s3client;
     public static final String PLAN_ID = "s3-shared-plan";
     public static final String CONFIG_DIR = "config";
 
-    public SharedPlan() {
-
-    }
-
-    public SharedPlan(Iam iam, S3 s3) {
+    @Autowired
+    public SharedPlan(Iam iam, S3 s3, BrokerConfiguration brokerConfiguration) {
         this.iam = iam;
         this.s3 = s3;
+        this.brokerConfiguration = brokerConfiguration;
         s3client = brokerConfiguration.amazonS3();
     }
 
@@ -57,7 +56,7 @@ public class SharedPlan {
     }
 
     private String getInstanceConfigPath(String instanceId) {
-        return "%s/%S".format(CONFIG_DIR, instanceId);
+        return String.format("%s/%s", CONFIG_DIR, instanceId);
     }
 
     public ServiceInstance createServiceInstance(ServiceDefinition service, String serviceInstanceId, String planId,

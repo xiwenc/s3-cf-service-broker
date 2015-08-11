@@ -15,9 +15,6 @@
  */
 package org.cloudfoundry.community.servicebroker.s3.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceBindingExistsException;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
@@ -28,9 +25,6 @@ import org.cloudfoundry.community.servicebroker.service.ServiceInstanceBindingSe
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.identitymanagement.model.AccessKey;
-import com.amazonaws.services.identitymanagement.model.User;
-
 /**
  * @author David Ehringer
  */
@@ -39,11 +33,15 @@ public class S3ServiceInstanceBindingService implements ServiceInstanceBindingSe
 
     private final S3 s3;
     private final Iam iam;
+    private final SharedPlan sharedPlan;
+    private final BasicPlan basicPlan;
 
     @Autowired
-    public S3ServiceInstanceBindingService(S3 s3, Iam iam) {
+    public S3ServiceInstanceBindingService(S3 s3, Iam iam, BasicPlan basicPlan, SharedPlan sharedPlan) {
         this.s3 = s3;
         this.iam = iam;
+        this.basicPlan = basicPlan;
+        this.sharedPlan = sharedPlan;
     }
 
     @Override
@@ -52,9 +50,9 @@ public class S3ServiceInstanceBindingService implements ServiceInstanceBindingSe
             ServiceBrokerException {
 
         if (planId.equals(BasicPlan.PLAN_ID)) {
-            return new BasicPlan(iam, s3).createServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId, appGuid);
+            return basicPlan.createServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId, appGuid);
         } else if (planId.equals(SharedPlan.PLAN_ID)) {
-            return new SharedPlan(iam, s3).createServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId, appGuid);
+            return sharedPlan.createServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId, appGuid);
         }
         return null;
     }
@@ -64,9 +62,9 @@ public class S3ServiceInstanceBindingService implements ServiceInstanceBindingSe
             String serviceId, String planId) throws ServiceBrokerException {
 
         if (planId.equals(BasicPlan.PLAN_ID)) {
-            return new BasicPlan(iam, s3).deleteServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId);
+            return basicPlan.deleteServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId);
         } else if (planId.equals(SharedPlan.PLAN_ID)) {
-            return new SharedPlan(iam, s3).deleteServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId);
+            return sharedPlan.deleteServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId);
         }
         return null;
     }
