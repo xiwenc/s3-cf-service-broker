@@ -10,6 +10,8 @@ import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
 import org.cloudfoundry.community.servicebroker.s3.config.BrokerConfiguration;
 import org.cloudfoundry.community.servicebroker.s3.service.Iam;
 import org.cloudfoundry.community.servicebroker.s3.service.S3;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.Arrays;
@@ -17,18 +19,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class SharedPlan {
-    private final Iam iam;
-    private final S3 s3;
-    private final BrokerConfiguration brokerConfiguration;
-    private final AmazonS3 s3client;
+    @Autowired
+    private BrokerConfiguration brokerConfiguration;
+
+    private Iam iam;
+    private S3 s3;
+    private AmazonS3 s3client;
     public static final String PLAN_ID = "s3-shared-plan";
     public static final String CONFIG_DIR = "config";
+
+    public SharedPlan() {
+
+    }
 
     public SharedPlan(Iam iam, S3 s3) {
         this.iam = iam;
         this.s3 = s3;
-        brokerConfiguration = new BrokerConfiguration();
         s3client = brokerConfiguration.amazonS3();
     }
 
