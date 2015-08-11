@@ -17,10 +17,7 @@ package org.cloudfoundry.community.servicebroker.s3.config;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.cloudfoundry.community.servicebroker.config.BrokerApiVersionConfig;
 import org.cloudfoundry.community.servicebroker.model.Catalog;
@@ -57,6 +54,15 @@ public class BrokerConfiguration {
     
     @Value("${AWS_SECRET_KEY}")
     private String secretKey;
+
+    @Value("${AWS_SHARED_BUCKET:}")
+    private String sharedBucket;
+
+    @Value("${AWS_SHARED_ACCESS_KEY:}")
+    private String sharedAccessKey;
+
+    @Value("${AWS_SHARED_SECRET_KEY:}")
+    private String sharedSecretKey;
 
     private AWSCredentials awsCredentials() {
         return new BasicAWSCredentials(accessKey, secretKey);
@@ -103,9 +109,18 @@ public class BrokerConfiguration {
     }
 
     private List<Plan> getPlans() {
+        List<Plan> myPlans = new ArrayList<Plan>();
+
         Plan basic = new Plan("s3-basic-plan", "Basic S3 Plan",
                 "An S3 plan providing a single bucket with unlimited storage.", getBasicPlanMetadata());
-        return Arrays.asList(basic);
+        myPlans.add(basic);
+
+        if(sharedBucket.length() > 0) {
+            Plan shared = new Plan("s3-shared-plan", "shared",
+                    "An S3 plan providing a shared bucket with unlimited storage.", getSharedPlanMetadata());
+            myPlans.add(shared);
+        }
+        return myPlans;
     }
 
     private Map<String, Object> getBasicPlanMetadata() {
@@ -116,5 +131,15 @@ public class BrokerConfiguration {
 
     private List<String> getBasicPlanBullets() {
         return Arrays.asList("Single S3 bucket", "Unlimited storage", "Unlimited number of objects");
+    }
+
+    private Map<String, Object> getSharedPlanMetadata() {
+        Map<String, Object> planMetadata = new HashMap<String, Object>();
+        planMetadata.put("bullets", getSharedPlanBullets());
+        return planMetadata;
+    }
+
+    private List<String> getSharedPlanBullets() {
+        return Arrays.asList("Shared S3 bucket", "Unlimited storage", "Unlimited number of objects");
     }
 }
