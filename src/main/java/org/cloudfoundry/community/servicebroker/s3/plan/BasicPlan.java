@@ -45,4 +45,14 @@ public class BasicPlan {
         iam.applyGroupPolicyForBucket(serviceInstanceId, bucket.getName());
         return new ServiceInstance(serviceInstanceId, service.getId(), planId, organizationGuid, spaceGuid, null);
     }
+
+    public ServiceInstance deleteServiceInstance(String id) {
+        ServiceInstance instance = s3.findServiceInstance(id);
+        // TODO we need to make these deletes idempotent so we can handle retries on error
+        iam.deleteGroupPolicy(id);
+        iam.deleteGroupForInstance(id);
+        s3.emptyBucket(id);
+        s3.deleteBucket(id);
+        return instance;
+    }
 }

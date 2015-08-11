@@ -60,13 +60,14 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
     @Override
     public ServiceInstance deleteServiceInstance(String id, String serviceId, String planId)
             throws ServiceBrokerException {
-        ServiceInstance instance = getServiceInstance(id);
-        // TODO we need to make these deletes idempotent so we can handle retries on error
-        iam.deleteGroupPolicy(id);
-        iam.deleteGroupForInstance(id);
-        s3.emptyBucket(id);
-        s3.deleteBucket(id);
-        return instance;
+
+        if (planId.equals(BasicPlan.PLAN_ID)) {
+            return new BasicPlan(iam, s3).deleteServiceInstance(id);
+        } else if (planId.equals(SharedPlan.PLAN_ID)) {
+            return new SharedPlan(iam, s3).deleteServiceInstance(id, serviceId, planId);
+        } else {
+            return null;
+        }
     }
 
     @Override

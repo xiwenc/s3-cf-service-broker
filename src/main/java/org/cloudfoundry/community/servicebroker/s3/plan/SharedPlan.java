@@ -41,4 +41,8 @@ public class SharedPlan {
                                                  String organizationGuid, String spaceGuid) {
         return new ServiceInstance(serviceInstanceId, service.getId(), planId, organizationGuid, spaceGuid, null);
     }
+
+    public ServiceInstance deleteServiceInstance(String id, String serviceId, String planId) {
+        return new ServiceInstance(id, serviceId, planId, null, null, null);
+    }
 }
