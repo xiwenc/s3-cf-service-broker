@@ -21,6 +21,8 @@ import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceExistsException;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
+import org.cloudfoundry.community.servicebroker.s3.plan.BasicPlan;
+import org.cloudfoundry.community.servicebroker.s3.plan.SharedPlan;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,10 +47,14 @@ public class S3ServiceInstanceService implements ServiceInstanceService {
     @Override
     public ServiceInstance createServiceInstance(ServiceDefinition service, String serviceInstanceId, String planId,
             String organizationGuid, String spaceGuid) throws ServiceInstanceExistsException, ServiceBrokerException {
-        Bucket bucket = s3.createBucketForInstance(serviceInstanceId, service, planId, organizationGuid, spaceGuid);
-        iam.createGroupForBucket(serviceInstanceId, bucket.getName());
-        iam.applyGroupPolicyForBucket(serviceInstanceId, bucket.getName());
-        return new ServiceInstance(serviceInstanceId, service.getId(), planId, organizationGuid, spaceGuid, null);
+
+        if (planId.equals(BasicPlan.PLAN_ID)) {
+            return new BasicPlan(iam, s3).createServiceInstance(service, serviceInstanceId, planId, organizationGuid, spaceGuid);
+        } else if (planId.equals(SharedPlan.PLAN_ID)) {
+            return new SharedPlan(iam, s3).createServiceInstance(service, serviceInstanceId, planId, organizationGuid, spaceGuid);
+        } else {
+            return null;
+        }
     }
 
     @Override
