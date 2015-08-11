@@ -23,6 +23,8 @@ import org.cloudfoundry.community.servicebroker.config.BrokerApiVersionConfig;
 import org.cloudfoundry.community.servicebroker.model.Catalog;
 import org.cloudfoundry.community.servicebroker.model.Plan;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
+import org.cloudfoundry.community.servicebroker.s3.plan.BasicPlan;
+import org.cloudfoundry.community.servicebroker.s3.plan.SharedPlan;
 import org.cloudfoundry.community.servicebroker.s3.service.BucketGroupPolicy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -110,36 +112,11 @@ public class BrokerConfiguration {
 
     private List<Plan> getPlans() {
         List<Plan> myPlans = new ArrayList<Plan>();
-
-        Plan basic = new Plan("s3-basic-plan", "Basic S3 Plan",
-                "An S3 plan providing a single bucket with unlimited storage.", getBasicPlanMetadata());
-        myPlans.add(basic);
-
+        myPlans.add(BasicPlan.getPlan());
         if(sharedBucket.length() > 0) {
-            Plan shared = new Plan("s3-shared-plan", "shared",
-                    "An S3 plan providing a shared bucket with unlimited storage.", getSharedPlanMetadata());
-            myPlans.add(shared);
+            myPlans.add(SharedPlan.getPlan());
         }
         return myPlans;
     }
 
-    private Map<String, Object> getBasicPlanMetadata() {
-        Map<String, Object> planMetadata = new HashMap<String, Object>();
-        planMetadata.put("bullets", getBasicPlanBullets());
-        return planMetadata;
-    }
-
-    private List<String> getBasicPlanBullets() {
-        return Arrays.asList("Single S3 bucket", "Unlimited storage", "Unlimited number of objects");
-    }
-
-    private Map<String, Object> getSharedPlanMetadata() {
-        Map<String, Object> planMetadata = new HashMap<String, Object>();
-        planMetadata.put("bullets", getSharedPlanBullets());
-        return planMetadata;
-    }
-
-    private List<String> getSharedPlanBullets() {
-        return Arrays.asList("Shared S3 bucket", "Unlimited storage", "Unlimited number of objects");
-    }
 }
