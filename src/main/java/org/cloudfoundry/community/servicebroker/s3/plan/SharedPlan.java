@@ -3,6 +3,8 @@ package org.cloudfoundry.community.servicebroker.s3.plan;
 import org.cloudfoundry.community.servicebroker.model.Plan;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
+import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
+import org.cloudfoundry.community.servicebroker.s3.config.BrokerConfiguration;
 import org.cloudfoundry.community.servicebroker.s3.service.Iam;
 import org.cloudfoundry.community.servicebroker.s3.service.S3;
 
@@ -44,5 +46,22 @@ public class SharedPlan {
 
     public ServiceInstance deleteServiceInstance(String id, String serviceId, String planId) {
         return new ServiceInstance(id, serviceId, planId, null, null, null);
+    }
+
+    public ServiceInstanceBinding createServiceInstanceBinding(String bindingId, ServiceInstance serviceInstance,
+                                                               String serviceId, String planId, String appGuid) {
+        BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
+
+        Map<String, Object> credentials = new HashMap<String, Object>();
+        credentials.put("bucket", brokerConfiguration.getSharedBucket());
+        credentials.put("username", serviceId);
+        credentials.put("access_key_id", brokerConfiguration.getSharedAccessKey());
+        credentials.put("secret_access_key", brokerConfiguration.getSharedSecretKey());
+        return new ServiceInstanceBinding(bindingId, serviceInstance.getId(), credentials, null, appGuid);
+    }
+
+    public ServiceInstanceBinding deleteServiceInstanceBinding(String bindingId, ServiceInstance serviceInstance,
+                                                               String serviceId, String planId) {
+        return new ServiceInstanceBinding(bindingId, serviceInstance.getId(), null, null, null);
     }
 }

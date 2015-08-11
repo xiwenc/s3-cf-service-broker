@@ -22,6 +22,8 @@ import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceBindingExistsException;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
+import org.cloudfoundry.community.servicebroker.s3.plan.BasicPlan;
+import org.cloudfoundry.community.servicebroker.s3.plan.SharedPlan;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceBindingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,27 +50,25 @@ public class S3ServiceInstanceBindingService implements ServiceInstanceBindingSe
     public ServiceInstanceBinding createServiceInstanceBinding(String bindingId, ServiceInstance serviceInstance,
             String serviceId, String planId, String appGuid) throws ServiceInstanceBindingExistsException,
             ServiceBrokerException {
-        User user = iam.createUserForBinding(bindingId);
-        AccessKey accessKey = iam.createAccessKey(user);
-        // TODO create password and add to credentials
-        iam.addUserToGroup(user, iam.getGroupNameForInstance(serviceInstance.getId()));
 
-        Map<String, Object> credentials = new HashMap<String, Object>();
-        credentials.put("bucket", s3.getBucketNameForInstance(serviceInstance.getId()));
-        credentials.put("username", user.getUserName());
-        credentials.put("access_key_id", accessKey.getAccessKeyId());
-        credentials.put("secret_access_key", accessKey.getSecretAccessKey());
-        return new ServiceInstanceBinding(bindingId, serviceInstance.getId(), credentials, null, appGuid);
+        if (planId.equals(BasicPlan.PLAN_ID)) {
+            return new BasicPlan(iam, s3).createServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId, appGuid);
+        } else if (planId.equals(SharedPlan.PLAN_ID)) {
+            return new SharedPlan(iam, s3).createServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId, appGuid);
+        }
+        return null;
     }
 
     @Override
     public ServiceInstanceBinding deleteServiceInstanceBinding(String bindingId, ServiceInstance serviceInstance,
             String serviceId, String planId) throws ServiceBrokerException {
-        // TODO make operations idempotent so we can handle retries on error
-        iam.removeUserFromGroup(bindingId, serviceInstance.getId());
-        iam.deleteUserAccessKeys(bindingId);
-        iam.deleteUserForBinding(bindingId);
-        return new ServiceInstanceBinding(bindingId, serviceInstance.getId(), null, null, null);
+
+        if (planId.equals(BasicPlan.PLAN_ID)) {
+            return new BasicPlan(iam, s3).deleteServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId);
+        } else if (planId.equals(SharedPlan.PLAN_ID)) {
+            return new SharedPlan(iam, s3).deleteServiceInstanceBinding(bindingId, serviceInstance, serviceId, planId);
+        }
+        return null;
     }
 
     @Override

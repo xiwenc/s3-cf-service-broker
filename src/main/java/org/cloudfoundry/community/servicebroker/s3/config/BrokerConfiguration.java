@@ -66,6 +66,18 @@ public class BrokerConfiguration {
     @Value("${AWS_SHARED_SECRET_KEY:}")
     private String sharedSecretKey;
 
+    public String getSharedBucket() {
+        return sharedBucket;
+    }
+
+    public String getSharedAccessKey() {
+        return sharedAccessKey;
+    }
+
+    public String getSharedSecretKey() {
+        return sharedSecretKey;
+    }
+
     private AWSCredentials awsCredentials() {
         return new BasicAWSCredentials(accessKey, secretKey);
     }
