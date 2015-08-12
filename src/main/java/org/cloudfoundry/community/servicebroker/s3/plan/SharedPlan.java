@@ -45,6 +45,13 @@ public class SharedPlan {
         return plan;
     }
 
+    private void ensureBucket() {
+        if (!s3client.doesBucketExist(brokerConfiguration.getSharedBucket())) {
+            s3client.createBucket(brokerConfiguration.getSharedBucket(), brokerConfiguration.getRegion());
+            //s3client.setBucketPolicy();
+        }
+    }
+
     private static Map<String, Object> getPlanMetadata() {
         Map<String, Object> planMetadata = new HashMap<String, Object>();
         planMetadata.put("bullets", getPlanBullets());
