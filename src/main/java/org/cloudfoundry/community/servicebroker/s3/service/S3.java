@@ -15,25 +15,19 @@
  */
 package org.cloudfoundry.community.servicebroker.s3.service;
 
-import java.util.List;
-
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.*;
+import com.google.common.collect.Lists;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
+import org.cloudfoundry.community.servicebroker.s3.config.BrokerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketTaggingConfiguration;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.S3VersionSummary;
-import com.amazonaws.services.s3.model.TagSet;
-import com.amazonaws.services.s3.model.VersionListing;
-import com.google.common.collect.Lists;
+import java.util.List;
 
 /**
  * @author David Ehringer
@@ -45,18 +39,20 @@ public class S3 {
 
     private final AmazonS3 s3;
     private final String bucketNamePrefix;
+    private final BrokerConfiguration brokerConfiguration;
 
     @Autowired
-    public S3(AmazonS3 s3, @Value("${BUCKET_NAME_PREFIX:cloud-foundry-}") String bucketNamePrefix) {
+    public S3(AmazonS3 s3, @Value("${BUCKET_NAME_PREFIX:cloud-foundry-}") String bucketNamePrefix, BrokerConfiguration brokerConfiguration) {
         this.s3 = s3;
         this.bucketNamePrefix = bucketNamePrefix;
+        this.brokerConfiguration = brokerConfiguration;
     }
 
     public Bucket createBucketForInstance(String instanceId, ServiceDefinition service, String planId,
             String organizationGuid, String spaceGuid) {
         String bucketName = getBucketNameForInstance(instanceId);
         logger.info("Creating bucket '{}' for serviceInstanceId '{}'", bucketName, instanceId);
-        Bucket bucket = s3.createBucket(bucketName);
+        Bucket bucket = s3.createBucket(bucketName, brokerConfiguration.getRegion());
 
         // TODO allow for additional, custom tagging options
         BucketTaggingConfiguration bucketTaggingConfiguration = new BucketTaggingConfiguration();

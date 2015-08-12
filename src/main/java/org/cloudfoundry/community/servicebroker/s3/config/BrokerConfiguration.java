@@ -15,10 +15,17 @@
  */
 package org.cloudfoundry.community.servicebroker.s3.config;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.*;
-
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.Region;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.cloudfoundry.community.servicebroker.config.BrokerApiVersionConfig;
 import org.cloudfoundry.community.servicebroker.model.Catalog;
 import org.cloudfoundry.community.servicebroker.model.Plan;
@@ -33,16 +40,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.ClassPathResource;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
 
 /**
  * @author David Ehringer
@@ -50,7 +50,10 @@ import com.google.common.io.Resources;
 @Configuration
 @ComponentScan(basePackages = "org.cloudfoundry.community.servicebroker", excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = BrokerApiVersionConfig.class) })
 public class BrokerConfiguration {
-    
+
+    @Value("${AWS_REGION:us-east-1}")
+    private String region;
+
     @Value("${AWS_ACCESS_KEY}")
     private String accessKey;
     
@@ -65,6 +68,10 @@ public class BrokerConfiguration {
 
     @Value("${AWS_SHARED_SECRET_KEY:}")
     private String sharedSecretKey;
+
+    public Region getRegion() {
+        return Region.fromValue(region);
+    }
 
     public String getSharedBucket() {
         return sharedBucket;
